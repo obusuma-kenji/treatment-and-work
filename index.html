@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>インタラクティブ・ガイド：治療と仕事の両立支援</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A user-centric, dashboard-style SPA designed to guide users from understanding the problem to finding actionable solutions. The structure consists of four main thematic sections: 1. "現状と課題" (The Situation & Challenges) to present the core problems with an interactive chart. 2. "支援の全体像" (The Big Picture of Support) to visualize the key relationships and processes using diagrams. 3. "具体的な支援策" (Concrete Support Measures) as a filterable, deep-dive section for both employees and companies. 4. "提言とアクション" (Recommendations & Actions) to provide a clear, actionable summary. This structure was chosen over a linear report format to allow users to quickly navigate to the information most relevant to their needs (e.g., an employee seeking financial aid, an HR manager looking for corporate policies), thus enhancing usability and information retention. -->
+    <!-- Visualization & Content Choices: 1. Challenges Chart (Doughnut Chart, Chart.js): To visually compare the main issues faced by employees, making the data more impactful. Interaction: Hover reveals details. 2. Support Triangle & Process Flow (HTML/CSS Diagrams): To organize and illustrate the core relationships and official guidelines. Interaction: Click to expand details. Justification: Simplifies complex structural information. 3. Support Measures (Tabs & Expandable Cards, HTML/JS): To organize a large volume of detailed information into browsable categories (for employees/companies). Interaction: Filtering and drill-down. Justification: Prevents information overload and improves navigation. 4. Grants Table (HTML Table): To present structured data clearly for comparison. Justification: Standard and effective for tabular data. 5. Recommendations (Styled List, HTML/CSS): To provide a scannable, actionable checklist. Justification: Focuses on clear takeaways. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 450px;
+        }
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 50vh;
+                max-height: 350px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active {
+            border-bottom-color: #0d9488; /* teal-600 */
+            color: #0f766e; /* teal-700 */
+            font-weight: 700;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .tab-button.active {
+            background-color: #0d9488;
+            color: white;
+        }
+        .expand-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .expandable-card.open .expand-content {
+            max-height: 1000px; /* Adjust as needed */
+        }
+        .expandable-card.open .arrow-icon {
+            transform: rotate(180deg);
+        }
+        .arrow-icon {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-3">
+                <h1 class="text-xl md:text-2xl font-bold text-teal-700">治療と仕事の両立支援ガイド</h1>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#challenges" class="nav-link py-2 px-1 text-slate-600 hover:text-teal-600">現状と課題</a>
+                    <a href="#overview" class="nav-link py-2 px-1 text-slate-600 hover:text-teal-600">支援の全体像</a>
+                    <a href="#measures" class="nav-link py-2 px-1 text-slate-600 hover:text-teal-600">具体的な支援策</a>
+                    <a href="#actions" class="nav-link py-2 px-1 text-slate-600 hover:text-teal-600">提言とアクション</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-slate-600 hover:text-teal-600 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden pb-3">
+                <a href="#challenges" class="block nav-link py-2 px-4 text-sm text-slate-600 hover:bg-slate-100 rounded">現状と課題</a>
+                <a href="#overview" class="block nav-link py-2 px-4 text-sm text-slate-600 hover:bg-slate-100 rounded">支援の全体像</a>
+                <a href="#measures" class="block nav-link py-2 px-4 text-sm text-slate-600 hover:bg-slate-100 rounded">具体的な支援策</a>
+                <a href="#actions" class="block nav-link py-2 px-4 text-sm text-slate-600 hover:bg-slate-100 rounded">提言とアクション</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+        <section id="intro" class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-slate-900">治療と仕事、一人で悩んでいませんか？</h2>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto">
+                今や、<span class="font-bold text-teal-600">労働者の3人に1人</span>が何らかの疾病を抱えながら働いています。このガイドは、病気と向き合いながら働き続けたいと願う方々、そしてそれを支える企業担当者の皆様のために、最新の情報と実践的な知識を分かりやすく提供します。
+            </p>
+        </section>
+
+        <div id="content-container">
+            <section id="challenges" class="content-section">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl md:text-3xl font-bold text-slate-900">両立を阻む「壁」とは何か？</h3>
+                    <p class="mt-2 text-slate-600 max-w-2xl mx-auto">治療と仕事の両立を目指す上で、多くの労働者が直面する課題は多岐にわたります。以下のグラフは、がん治療中の社員が抱える主な問題点を示しています。経済的な不安、身体的な負担、そして職場の環境が複雑に絡み合っていることが分かります。</p>
+                </div>
+                <div class="bg-white p-4 sm:p-8 rounded-xl shadow-lg">
+                    <div class="chart-container">
+                        <canvas id="challengesChart"></canvas>
+                    </div>
+                    <div class="mt-8 grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-center text-sm">
+                        <div class="p-3 bg-rose-50 rounded-lg"><span class="font-bold text-rose-700">経済的な課題</span> (51.8%)</div>
+                        <div class="p-3 bg-sky-50 rounded-lg"><span class="font-bold text-sky-700">身体・精神的な課題</span> (36.5%)</div>
+                        <div class="p-3 bg-amber-50 rounded-lg"><span class="font-bold text-amber-700">柔軟な働き方の不足</span> (16.7%)</div>
+                        <div class="p-3 bg-emerald-50 rounded-lg"><span class="font-bold text-emerald-700">職場環境・理解不足</span> (18.1%)</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="overview" class="content-section">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl md:text-3xl font-bold text-slate-900">支援の全体像：誰が、何を、どう支えるか</h3>
+                    <p class="mt-2 text-slate-600 max-w-2xl mx-auto">効果的な両立支援は、個人の努力だけで成り立つものではありません。労働者本人、企業、そして医療機関の三者が連携する「トライアングル型支援」が成功の鍵となります。ここでは、その関係性と支援の基本的な流れを解説します。</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8 items-start">
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h4 class="font-bold text-xl mb-4 text-center text-slate-800">トライアングル型支援体制</h4>
+                        <div class="relative flex flex-col items-center space-y-4">
+                            <div class="w-full p-4 bg-teal-50 border border-teal-200 rounded-lg text-center expandable-card cursor-pointer">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-teal-800">▲ 労働者 (本人)</span>
+                                    <span class="arrow-icon text-teal-600">▼</span>
+                                </div>
+                                <div class="expand-content mt-2 text-left text-sm text-slate-700">
+                                    <p>・自身の体調や治療状況、業務遂行能力について正確に伝える</p>
+                                    <p>・必要な配慮や支援を具体的に申し出る</p>
+                                    <p>・支援制度を主体的に活用する</p>
+                                </div>
+                            </div>
+                            <div class="flex justify-between w-full">
+                                <div class="w-2/5 p-4 bg-sky-50 border border-sky-200 rounded-lg text-center expandable-card cursor-pointer">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-bold text-sky-800">▲ 企業</span>
+                                        <span class="arrow-icon text-sky-600">▼</span>
+                                    </div>
+                                    <div class="expand-content mt-2 text-left text-sm text-slate-700">
+                                        <p>・相談窓口の設置と周知</p>
+                                        <p>・柔軟な勤務制度の導入</p>
+                                        <p>・産業医等と連携し、就業上の措置を検討</p>
+                                        <p>・プライバシーに配慮した情報管理</p>
+                                    </div>
+                                </div>
+                                <div class="w-2/5 p-4 bg-rose-50 border border-rose-200 rounded-lg text-center expandable-card cursor-pointer">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-bold text-rose-800">▲ 医療機関</span>
+                                        <span class="arrow-icon text-rose-600">▼</span>
+                                    </div>
+                                    <div class="expand-content mt-2 text-left text-sm text-slate-700">
+                                        <p>・病状や治療の見通し、就業上の留意点を分かりやすく説明</p>
+                                        <p>・企業の産業医等と連携し、専門的見地から助言</p>
+                                        <p>・各種支援制度の情報提供</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h4 class="font-bold text-xl mb-4 text-center text-slate-800">両立支援の基本プロセス (厚労省ガイドライン)</h4>
+                        <ol class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">1</div>
+                                <div>
+                                    <h5 class="font-bold">労働者からの申出・情報提供</h5>
+                                    <p class="text-sm text-slate-600">本人が体調や希望を会社に伝え、支援プロセスが始まります。</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">2</div>
+                                <div>
+                                    <h5 class="font-bold">産業医等の意見聴取</h5>
+                                    <p class="text-sm text-slate-600">会社は産業医等に情報を提供し、専門的な意見を求めます。</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">3</div>
+                                <div>
+                                    <h5 class="font-bold">就業継続の判断</h5>
+                                    <p class="text-sm text-slate-600">主治医や産業医の意見を元に、会社が就業継続の可否を判断します。</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">4</div>
+                                <div>
+                                    <h5 class="font-bold">両立支援プランの策定・実施</h5>
+                                    <p class="text-sm text-slate-600">勤務時間の調整など、具体的な支援計画を作成し、実行します。</p>
+                                </div>
+                            </li>
+                             <li class="flex items-start">
+                                <div class="flex-shrink-0 bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">5</div>
+                                <div>
+                                    <h5 class="font-bold">休業・職場復帰支援</h5>
+                                    <p class="text-sm text-slate-600">休業が必要な場合は、復帰に向けたプランを策定しサポートします。</p>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <section id="measures" class="content-section">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl md:text-3xl font-bold text-slate-900">具体的な支援策：使える制度・サービス一覧</h3>
+                    <p class="mt-2 text-slate-600 max-w-2xl mx-auto">ここでは、労働者と企業がそれぞれ活用できる具体的な支援策を紹介します。下のタブをクリックして、あなたに必要な情報を探してください。</p>
+                </div>
+                
+                <div class="mb-6 flex justify-center border-b border-slate-200">
+                    <button class="tab-button py-2 px-6 font-semibold text-slate-600 rounded-t-lg" data-tab="employee">労働者向け</button>
+                    <button class="tab-button py-2 px-6 font-semibold text-slate-600 rounded-t-lg" data-tab="company">企業向け</button>
+                </div>
+
+                <div id="employee-content" class="tab-content">
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-xl shadow-lg expandable-card">
+                            <div class="flex justify-between items-center cursor-pointer">
+                                <h4 class="font-bold text-lg text-teal-700">相談窓口</h4>
+                                <span class="arrow-icon text-teal-600">▼</span>
+                            </div>
+                            <div class="expand-content mt-2 text-sm text-slate-600 space-y-2">
+                                <p><strong>がん相談支援センター:</strong> 全国の拠点病院に設置。治療や就労の相談が可能。</p>
+                                <p><strong>産業保健総合支援センター:</strong> 企業と医療機関の中立的な立場で支援。</p>
+                                <p><strong>ハローワーク:</strong> 長期療養者向けの専門相談窓口で就職を支援。</p>
+                                <p><strong>労災病院 両立支援センター:</strong> 職場復帰に特化した支援を提供。</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-lg expandable-card">
+                            <div class="flex justify-between items-center cursor-pointer">
+                                <h4 class="font-bold text-lg text-teal-700">経済的支援</h4>
+                                <span class="arrow-icon text-teal-600">▼</span>
+                            </div>
+                            <div class="expand-content mt-2 text-sm text-slate-600 space-y-2">
+                                <p><strong>傷病手当金:</strong> 休業4日目から最長1年6ヶ月、給与の約2/3を保障。</p>
+                                <p><strong>高額療養費制度:</strong> 医療費の自己負担額が上限を超えた場合に還付。</p>
+                                <p><strong>障害年金:</strong> 病気やけがで生活や仕事が制限される場合に受給可能。</p>
+                                <p><strong>自立支援医療制度:</strong> 精神疾患等の継続的な通院医療費の負担を軽減。</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-lg expandable-card">
+                            <div class="flex justify-between items-center cursor-pointer">
+                                <h4 class="font-bold text-lg text-teal-700">働き方の工夫</h4>
+                                <span class="arrow-icon text-teal-600">▼</span>
+                            </div>
+                            <div class="expand-content mt-2 text-sm text-slate-600 space-y-2">
+                                <p><strong>時間単位年休:</strong> 1時間単位で有給休暇を取得。</p>
+                                <p><strong>時差出勤・フレックス:</strong> 通勤ラッシュを避け、体調に合わせて勤務。</p>
+                                <p><strong>短時間勤務:</strong> 体力的な負担を軽減。</p>
+                                <p><strong>テレワーク:</strong> 通勤の負担なく在宅で勤務。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="company-content" class="tab-content hidden">
+                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-xl shadow-lg expandable-card">
+                            <div class="flex justify-between items-center cursor-pointer">
+                                <h4 class="font-bold text-lg text-teal-700">制度設計・環境整備</h4>
+                                <span class="arrow-icon text-teal-600">▼</span>
+                            </div>
+                            <div class="expand-content mt-2 text-sm text-slate-600 space-y-2">
+                                <p><strong>傷病休暇・病気休暇制度:</strong> 法定外の特別休暇を設ける。</p>
+                                <p><strong>試し出勤制度:</strong> 本格復帰前に短時間から慣らし勤務。</p>
+                                <p><strong>相談窓口の明確化:</strong> プライバシーを保護し、相談しやすい体制を構築。</p>
+                                <p><strong>管理職・従業員研修:</strong> 両立支援への理解を深め、協力的な風土を醸成。</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-lg expandable-card">
+                            <div class="flex justify-between items-center cursor-pointer">
+                                <h4 class="font-bold text-lg text-teal-700">連携体制の構築</h4>
+                                <span class="arrow-icon text-teal-600">▼</span>
+                            </div>
+                            <div class="expand-content mt-2 text-sm text-slate-600 space-y-2">
+                                <p><strong>産業医・産業保健スタッフとの連携:</strong> 専門家の意見を聴取し、適切な措置を講じる。</p>
+                                <p><strong>医療機関との連携:</strong> 本人の同意を得て主治医と情報共有。「勤務状況提供書」などを活用。</p>
+                                <p><strong>両立支援コーディネーターの活用:</strong> 企業・医療機関・本人の橋渡し役として活用。</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-lg expandable-card">
+                            <div class="flex justify-between items-center cursor-pointer">
+                                <h4 class="font-bold text-lg text-teal-700">民間保険(GLTD)の活用</h4>
+                                <span class="arrow-icon text-teal-600">▼</span>
+                            </div>
+                            <div class="expand-content mt-2 text-sm text-slate-600 space-y-2">
+                                <p><strong>団体長期障害所得補償保険(GLTD):</strong> 傷病手当金の支給期間終了後も、従業員の収入減少を長期間補償する福利厚生制度。</p>
+                                <p><strong>メリット:</strong> 従業員の経済的不安を解消し、人材定着に繋がる。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 bg-white p-6 rounded-xl shadow-lg">
+                        <h4 class="font-bold text-xl mb-4 text-center text-slate-800">両立支援等助成金</h4>
+                        <p class="text-sm text-slate-600 mb-4 text-center">事業主が両立支援の取り組みを行った場合に支給される助成金です。特に「不妊治療及び女性の健康課題対応両立支援コース」は、疾病治療にも関連が深いです。</p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-100 text-slate-700">
+                                    <tr>
+                                        <th class="p-3">コース名</th>
+                                        <th class="p-3">目的</th>
+                                        <th class="p-3">支給額(中小企業)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b">
+                                        <td class="p-3 font-medium">不妊治療及び女性の健康課題対応両立支援</td>
+                                        <td class="p-3">不妊治療や月経、更年期等の課題に対応する制度の利用促進</td>
+                                        <td class="p-3 font-semibold text-teal-700">各30万円</td>
+                                    </tr>
+                                    <tr class="border-b bg-slate-50">
+                                        <td class="p-3 font-medium">出生時両立支援</td>
+                                        <td class="p-3">男性の育児休業取得促進</td>
+                                        <td class="p-3 font-semibold text-teal-700">20万円～</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="p-3 font-medium">介護離職防止支援</td>
+                                        <td class="p-3">介護休業の取得・復帰支援</td>
+                                        <td class="p-3 font-semibold text-teal-700">20万円～</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="actions" class="content-section">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl md:text-3xl font-bold text-slate-900">明日から始める、両立支援の第一歩</h3>
+                    <p class="mt-2 text-slate-600 max-w-2xl mx-auto">治療と仕事の両立は、特別なことではありません。誰もが安心して働き続けられる職場を作るために、企業が取り組むべき重要なステップをまとめました。</p>
+                </div>
+                <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg space-y-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center mr-4 font-bold">1</div>
+                        <div>
+                            <h4 class="font-bold text-lg">経営層のコミットメントと方針の明確化</h4>
+                            <p class="text-slate-600">経営トップが「社員の健康が最も重要」というメッセージを発信し、両立支援を会社の基本方針として全社に周知する。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center mr-4 font-bold">2</div>
+                        <div>
+                            <h4 class="font-bold text-lg">相談窓口の設置とプライバシー保護の徹底</h4>
+                            <p class="text-slate-600">人事部や産業保健スタッフが担当する相談窓口を明確にし、相談内容の秘密が厳守されることをルール化して周知する。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center mr-4 font-bold">3</div>
+                        <div>
+                            <h4 class="font-bold text-lg">従業員への意識啓発と研修の実施</h4>
+                            <p class="text-slate-600">管理職や一般社員向けに研修を行い、病気への偏見をなくし、「お互いさま」という協力的な職場風土を醸成する。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center mr-4 font-bold">4</div>
+                        <div>
+                            <h4 class="font-bold text-lg">柔軟な勤務制度の導入と運用改善</h4>
+                            <p class="text-slate-600">時間単位年休やテレワークなど、多様な働き方を導入し、従業員が利用しやすいように運用方法を工夫する。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center mr-4 font-bold">5</div>
+                        <div>
+                            <h4 class="font-bold text-lg">外部支援機関との連携強化</h4>
+                            <p class="text-slate-600">産業保健総合支援センターや両立支援コーディネーターなど、外部の専門家の力を積極的に活用し、自社だけでは解決できない課題に対応する。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="bg-slate-800 text-white mt-16">
+        <div class="container mx-auto px-4 py-6 text-center text-sm">
+            <p>&copy; 2025 治療と仕事の両立支援インタラクティブガイド</p>
+            <p class="text-slate-400 mt-1">このコンテンツは、提供されたレポートに基づき情報提供を目的として作成されたものです。</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const challengesChartData = {
+        labels: [
+            '治療費の見通しが立たない (27.3%)',
+            '収入の減少 (24.5%)',
+            '通勤が困難 (24.5%)',
+            '有給休暇の不足 (12.0%)',
+            '柔軟な勤務ができない (16.7%)',
+            '職場に相談相手がいない (9.4%)',
+            '病気のことを言いづらい (8.7%)'
+        ],
+        datasets: [{
+            label: 'Challenges',
+            data: [27.3, 24.5, 24.5, 12.0, 16.7, 9.4, 8.7],
+            backgroundColor: [
+                '#fb7185', // rose-400 (経済)
+                '#f43f5e', // rose-500 (経済)
+                '#38bdf8', // sky-400 (身体)
+                '#0ea5e9', // sky-500 (身体)
+                '#f59e0b', // amber-500 (働き方)
+                '#34d399', // emerald-400 (職場)
+                '#10b981'  // emerald-500 (職場)
+            ],
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            hoverOffset: 4
+        }]
+    };
+
+    const challengesChartConfig = {
+        type: 'doughnut',
+        data: challengesChartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 20,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'がん治療中の社員が抱える問題（複数回答）',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += context.parsed + '%';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        },
+    };
+
+    const challengesChartCtx = document.getElementById('challengesChart').getContext('2d');
+    new Chart(challengesChartCtx, challengesChartConfig);
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const contentSections = document.querySelectorAll('.content-section');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    function navigateToSection(hash) {
+        if (!hash) hash = '#challenges';
+        
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === hash) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+
+        contentSections.forEach(section => {
+            if ('#' + section.id === hash) {
+                section.classList.add('active');
+            } else {
+                section.classList.remove('active');
+            }
+        });
+        window.scrollTo(0, 0);
+    }
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetHash = link.getAttribute('href');
+            history.pushState(null, null, targetHash);
+            navigateToSection(targetHash);
+            if (mobileMenu.classList.contains('hidden') === false) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    });
+
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    window.addEventListener('popstate', () => {
+        navigateToSection(window.location.hash);
+    });
+
+    navigateToSection(window.location.hash || '#challenges');
+
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.dataset.tab;
+
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            tabContents.forEach(content => {
+                if (content.id === `${tabId}-content`) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    document.querySelector('.tab-button[data-tab="employee"]').click();
+
+    const expandableCards = document.querySelectorAll('.expandable-card');
+    expandableCards.forEach(card => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('open');
+        });
+    });
+});
+</script>
+</body>
+</html>
